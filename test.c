@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 int main(){
-	printf("kim is gey.");
+	printf("kim is gey.\n");
 
 }
 
