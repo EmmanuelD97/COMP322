@@ -9,9 +9,6 @@ void print(){
 int main(){
 	char fileName[64];
 	char* filename = "";
-	printf("enter a word\n");
-	read(filename);
-
-	printf("%s", &filename);
+	printf("enter a word\n\n");
 }
 
