@@ -2,21 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-void printTopRow() {
-	printf("Original ASCII    Decimal  Parity \n");
-	printf("-------- -------- -------- -------- \n");
-}
-
-
-int toDecimal(int binArray[]) {
-	int decimal = 0;
-	for (int i = 7, j = 0; i > 0; i--, j++) {
-		decimal = decimal + ((binArray[i] - 48) * pow(2, j));
-	}
-
-	return decimal;
-}
-
 char* sumforPar(int binArray[]) {
 	int sum = 0, i = 0;
 	for (i = 0; i < 8; i++) {
@@ -29,6 +14,37 @@ char* sumforPar(int binArray[]) {
 	else {
 			return "ODD";
 	}
+}
+
+int toDecimal(int binArray[]) {
+	int decimal = 0;
+	for (int i = 7, j = 0; i > 0; i--, j++) {
+		decimal = decimal + ((binArray[i] - 48) * pow(2, j));
+	}
+
+	return decimal;
+}
+
+void printTopRow() {
+	printf("Original ASCII    Decimal  Parity \n");
+	printf("-------- -------- -------- -------- \n");
+}
+
+void printRest(int binAscii[]) {
+	for(int i = 0; i < 8; i++){
+		printf("%c", binAscii[i]); //%s to %d
+		//printf(" ");
+	}
+	printf("\t");
+
+	//for printing ASCII char
+	printf("%c", toDecimal(binAscii));
+
+	//for printing decimal
+	printf("%8d\t", toDecimal(binAscii));
+
+	printf("%s", sumforPar(binAscii));
+	printf("\n");
 }
 
 int main(int argc, char **argv) {
@@ -50,50 +66,23 @@ int main(int argc, char **argv) {
 					binAscii[counter] = readerInt;
 					counter++;
 				}
-				//printf("this is the reader int: %d", readerInt);
+
 				if (counter == 8 || (counter > 0 && readerInt == ' ')){
-					for(int i = 0; i < 8; i++){
-						printf("%c", binAscii[i]); //%s to %d
-						//printf(" ");
-					}
-					printf("\t");
-
-					//for printing ASCII char
-					printf("%c", toDecimal(binAscii));
-
-					//for printing decimal
-					printf("%8d\t", toDecimal(binAscii));
-
-					printf("%s", sumforPar(binAscii));
+					printRest(binAscii);
 
 					//reseting the array and counter
 					for(int i = 0; i < 8; i++){
 						binAscii[i] = '0';
 					}
 					counter = 0;
-
-					printf("\n");
 				}
 		}
 		if (counter > 0) {
-			//printf("counter: %d", counter);
 			for(int j = counter - 1; j < 8; j++){
 				binAscii[j] = '0';
 			}
-			for(int i = 0; i < 8; i++){
-				printf("%c", binAscii[i]); //%s to %d
-			}
-			printf("\t");
+			printRest(binAscii);
 
-			//for printing ASCII char
-			printf("%c", toDecimal(binAscii));
-
-			//for printing decimal
-			printf("%8d\t", toDecimal(binAscii));
-
-			printf("%s", sumforPar(binAscii));
-
-			printf("\n");
 			counter = 0;
 		}
 
