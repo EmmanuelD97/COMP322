@@ -170,6 +170,9 @@ int inputTypeOne(char **argv){
           }
         }
       }
+      else if(returnVal == 0){
+        printf("The file is empty!\n"); 
+      }
     }
     //if more than one character in the array but at the end of the file
     //pad the rest to the right with 0s and print
