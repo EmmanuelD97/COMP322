@@ -142,7 +142,7 @@ int typeOfInput(int argc, char **argv){
 int inputTypeOne(char **argv){
   char buffer[1] = {0};
   int binAscii[8] = {0};
-  int counter = 0;
+  int counter = 0, numberPrinted = 0;
   int returnVal = -2;
   int fDescriptor;
 
@@ -165,13 +165,14 @@ int inputTypeOne(char **argv){
         if (counter == 8) {
           printRest(binAscii);
           counter = 0;
+          numberPrinted++; //keeping track of how many I've printed so far
           for (int i = 0; i < 8; i++){ //refill array with 0s
             binAscii[i] = '0';
           }
         }
       }
-      else if(returnVal == 0){
-        printf("The file is empty!\n"); 
+      else if(returnVal == 0 && numberPrinted == 0){
+        printf("The file is empty!\n");
       }
     }
     //if more than one character in the array but at the end of the file
