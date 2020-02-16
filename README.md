@@ -15,3 +15,5 @@ implemented read(), and a method to read from the command line if there is no in
 took care of every possible valid input
 
 took care of some minor bugs that gave issues with printing
+
+finalized project, it meets all the grading criteria and requirements. I left some comments to make it easier to read.
