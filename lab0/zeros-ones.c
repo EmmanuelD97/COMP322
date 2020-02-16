@@ -155,13 +155,16 @@ int inputTypeOne(char **argv){
     while (returnVal != 0){ //while the file is not empty read next character
       returnVal = read (fDescriptor, buffer, 1);
 
-      if (returnVal != 0) {
+      if (returnVal != 0){
         if (buffer[0] != ' '){
           binAscii[counter] = buffer[0];
           counter++;
         }
         //we have 8 characters in the array so print
         if (counter == 8) {
+          if (numberPrinted == 0){
+            printTopRow();
+          }
           printRest(binAscii);
           counter = 0;
           numberPrinted++; //keeping track of how many I've printed so far
@@ -236,7 +239,6 @@ int main(int argc, char **argv){
 	else{
     typeOfInp = typeOfInput(argc,argv);
     if (typeOfInp == 1){
-      printTopRow();
       inputTypeOne(argv);
   	}
     else if(typeOfInp == 2){
