@@ -134,7 +134,6 @@ int typeOfInput(int argc, char **argv){
   }
   else{
     //not a valid input
-    printf("its invalid\n");
     return 4;
   }
 
@@ -249,7 +248,7 @@ int main(int argc, char **argv){
       inputFromLine(typeOfInp, argc, argv);
     }
     else if(typeOfInp == 4){
-      printf("Not a valid input!");
+      printf("Not a valid input!\n");
     }
   }
 	return 0;
