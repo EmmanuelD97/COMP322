@@ -11,11 +11,11 @@ void reportStatus(int pid, int retVal, struct tms timer) {
   /*The if statement here makes it so that we can use the same method for both
   the parent and the child without reusing code
   */
-  if (pid == 0) {
+  if (pid == 0) { //child side
     printf("START: %ld\n", time(NULL));
     printf("PPID: %d, PID: %d\n", getppid(), getpid());
   }
-  else if (pid > 1) {
+  else if (pid > 1) { //parent side
     printf("PPID: %d, PID: %d, ", getppid(), getpid());
     printf("CPID: %d, RETVAL: %d\n", pid, retVal);
 
