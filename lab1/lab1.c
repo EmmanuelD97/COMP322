@@ -31,14 +31,12 @@ int main(void)
   int status;
   struct tms timer;
   clock_t sinceboot;
-  clock_t times(struct tms *timer);
 
   sinceboot = times(&timer); //setting time
   pid = fork(); //creating fork
 
   if (pid == 0) {
     reportStatus(pid, WEXITSTATUS(status), timer); //calling the print method
-    sleep(3);  //putting the process to sleep to change time between start and stop
     _exit(0);  //exit child process
   }
 
