@@ -1,8 +1,8 @@
 #include <stdio.h>   /* printf, stderr, fprintf */
 #include <sys/types.h> /* pid_t */
-#include <sys/times.h>
-#include <sys/wait.h>
-#include <time.h>
+#include <sys/times.h> /*struct tms*/
+#include <sys/wait.h> /*waitpid*/
+#include <time.h> /*clock_t, time*/
 #include <unistd.h>  /* _exit, fork */
 #include <stdlib.h>  /* exit */
 #include <errno.h>   /* errno */
