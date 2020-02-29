@@ -32,8 +32,11 @@ int main(void)
   struct tms timer;
   clock_t sinceboot;
 
-  sinceboot = times(&timer); //setting time
   pid = fork(); //creating fork
+
+  waitpid(pid, &status, WUNTRACED); //waits for the child to finish before continuing
+  sinceboot = times(&timer); //setting time
+
 
   if (pid == 0) {
     reportStatus(pid, WEXITSTATUS(status), timer); //calling the print method
@@ -41,9 +44,7 @@ int main(void)
   }
 
   else if (pid > 0) {
-    waitpid(pid, &status, WUNTRACED); //waits for the child to finish before continuing
-    //printing method for child and parent
-    reportStatus(pid, WEXITSTATUS(status), timer);
+    reportStatus(pid, WEXITSTATUS(status), timer); //print method for parent and child
     exit(0);
   }
 
