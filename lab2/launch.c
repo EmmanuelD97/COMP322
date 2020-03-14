@@ -5,11 +5,12 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 
-int forkNLaunch(int argc, char *argv[]) {
+void forkNLaunch(int argc, char *argv[]) {
   pid_t  pid;
-
+  int status;
+  //int status;
   pid = fork();
-  waitpid(pid, &status, WUNTRACED);
+  //waitpid(pid, &status, WUNTRACED);
 
   if (pid == 0) {
     execve(argv[1], argv + 1, NULL);
@@ -17,17 +18,21 @@ int forkNLaunch(int argc, char *argv[]) {
   }
 
   else if (pid > 0) {
-    reportStatus(pid, WEXITSTATUS(status), timer); //print method for parent and child
+    fprintf(stderr, "%s: $$ = %d\n", argv[1], pid);
+    waitpid(pid, &status,0);
+
+    fprintf(stderr, "%s: $? = %d \n", argv[1], status);
     exit(0);
   }
 
   else {
     //negative number was returned from fork() so error
-    fprintf(stderr, "can't fork, error %d\n", errno);
+    fprintf(stderr, "fork error %d\n", errno);
     exit(EXIT_FAILURE);
   }
 }
 
 int main(int argc, char *argv[]) {
-
+  forkNLaunch(argc, argv);
+  return 0;
 }

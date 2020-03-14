@@ -1,11 +1,26 @@
 #Emmanoel Dermkrdichyan
 #lab2
 
-COMPILE:
-	gcc -c tube.c -Wall -Wextra
-	gcc -o tube tube.o -lm
-	gcc -c launch.c -Wall -Wextra
-	gcc -o launch launch.o -lm
+EXECUTABLE-L=launch
+EXECUTABLE-T=tube
+SRC-L=launch.c
+SRC-T=tube.c
+OBJ-L=launch.o
+OBJ-T=tube.o
 
-REMOVE:
-	rm tube tube.o launch launch.o
+CC=gcc
+CFLAGS=-g
+
+all: $(EXECUTABLE-L) $(EXECUTABLE-T)
+
+
+$(EXECUTABLE-L): $(SRC-L)
+	$(CC) $(CFLAGS) -c $(SRC-L)
+	$(CC) $(CFLAGS) -o $@ $(OBJ-L)
+
+$(EXECUTABLE-T): $(SRC-T)
+	$(CC) $(CFLAGS) -c $(SRC-T)
+	$(CC) $(CFLAGS) -o $@ $(OBJ-T)
+
+clean:
+	rm -f $(EXECUTABLE-L) $(EXECUTABLE-T) $(OBJ-L) $(OBJ-T) *~
