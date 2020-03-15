@@ -39,6 +39,8 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     else if (pid == 0 && childFlag == 1) { //child
+        dup2(pipefd[1], 1);
+
         execve(argv[1], argv + 1, NULL);
         //printf("this is the childFlag %d\n", childFlag);
         _exit(0);
@@ -62,6 +64,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
         else if (pid2 == 0 && childFlag == 2) { //child 2
+            dup2(pipefd[0], 0);
             execve(argv[posSecondArg], argv + posSecondArg, NULL);
             //printf("this is the childFlag %d\n", childFlag);
             _exit(0);
