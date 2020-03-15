@@ -1,85 +1,91 @@
-#include <stdio.h>   /* printf, stderr, fprintf */
-#include <sys/types.h> /* pid_t */
-#include <unistd.h>  /* _exit, fork */
-#include <stdlib.h>  /* exit */
-#include <errno.h>   /* errno - number of last error */
-#include <sys/wait.h> /* waitpid() */
+/*
+Emmanoel Dermkrdichyan lab2 Tube
+*/
+
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <sys/wait.h>
 #include <string.h>
+#include <errno.h>
+
+/*
+In case of a fork error this method is called which prints
+an error msg and exits
+*/
+void forkErr() {
+    fprintf(stderr, "fork error %d\n", errno);
+    exit(EXIT_FAILURE);
+}
+
+void forker(int argc, char *argv[], int arg2) {
+    int pipe1[2]; //pipe in and write end
+    int wait1, wait2; //used for when we want to wait for forks
+    int state, state2; //the state for the waitpid
+    pid_t  pid, pid2; //for first and second fork
+
+    pipe(pipe1); //creating the pipe
+    pid = fork(); //first fork
+
+    wait1 = waitpid(pid, &state, WUNTRACED); //waiting for child
+
+    if (pid == -1) {
+        forkErr(); //error while forking
+    }
+    else if (pid == 0) { //child
+        dup2(pipe1[1], 1); 
+        execve(argv[1], argv + 1, NULL); //execute first program
+        _exit(0);
+    }
+    else { //parent
+        pid2 = fork(); //second fork
+        if (pid2 == -1) {
+            forkErr(); //forking error
+        }
+        else if (pid2 > 0) {
+            fprintf(stderr, "%s: $$ = %d\n", argv[1], pid); //print first childs pid in stderr
+            fprintf(stderr, "%s: $$ = %d\n", argv[arg2], pid2); //print second childs pid in stderr
+            wait2 = waitpid(pid2, &state2, WUNTRACED); //waiting for second child
+        }
+        else if (pid2 == 0) { //child 2
+            dup2(pipe1[0], 0);
+            execve(argv[arg2], argv + arg2, NULL); //execute second program
+            _exit(0);
+        }
+        if (pid > 0){
+            int exitStat1 = WEXITSTATUS(state); //we get the exit status of first child
+            int exitStat2 = WEXITSTATUS(state2); //exit status of second child
+
+            fprintf(stderr, "%s: $? = %d\n", argv[1], exitStat1); //we print the childrens exit status here
+            fprintf(stderr, "%s: $? = %d\n", argv[arg2], exitStat2);
+
+            close(pipe1[1]); //close both ends of the pipe
+            close(pipe1[0]);
+        }
+        exit(0);
+    }
+}
 
 int main(int argc, char *argv[])
 {
-    int pipefd[2];
-    int pipefd2[2];
-    int wait1 = -1, wait2 = -1;
-    pipe(pipefd);
-    int posSecondArg;
-    int i = 0;
-    int stat_loc;
-    int stat_loc2;
-    int childFlag = 1;
-
-    while(i < argc)
-    {
-        if(strcmp(argv[i] , ",") == 0)
-        {
+    int arg2;
+    /*
+    This forloop is used to figure out where the second argument
+    starts by comparing the arguments to a ","
+    */
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i] , ",") == 0) {
             argv[i] = NULL;
-            posSecondArg = i + 1;
-            break;
+            arg2 = i + 1;
         }
-
-        i++;
     }
 
-
-    pid_t  pid = fork();
-    wait1 = waitpid(pid, &stat_loc, WUNTRACED);
-
-    if (pid == -1) {
-        fprintf(stderr, "fork error %d\n", errno);
-        exit(EXIT_FAILURE);
-    }
-    else if (pid == 0 && childFlag == 1) { //child
-        dup2(pipefd[1], 1);
-
-        execve(argv[1], argv + 1, NULL);
-        //printf("this is the childFlag %d\n", childFlag);
-        _exit(0);
-    }
-    else if (pid > 0) { //parent
-        //childFlag = 2;
-        //printf("this is the childFlag %d\n", childFlag);
-        pid_t pid2 = fork();
-        if (childFlag == 1) {
-            fprintf(stderr, "%s: $$ = %d\n", argv[1], pid);
-            fprintf(stderr, "%s: $$ = %d\n", argv[4], pid2);
-        }
-        childFlag = 2;
-
-        //fprintf(stderr, "%s: $$ = %d\n", argv[1], pid);
-        //fprintf(stderr, "%s: $$ = %d\n", argv[4], pid2);
-        //wait2 = waitpid(pid2, &stat_loc2, WUNTRACED);
-
-        if (pid2 == -1) {
-            fprintf(stderr, "fork error %d\n", errno);
-            exit(EXIT_FAILURE);
-        }
-        else if (pid2 == 0 && childFlag == 2) { //child 2
-            dup2(pipefd[0], 0);
-            execve(argv[posSecondArg], argv + posSecondArg, NULL);
-            //printf("this is the childFlag %d\n", childFlag);
-            _exit(0);
-        }
-        else if (pid2 > 0){
-
-            int exitStat1 = WEXITSTATUS(stat_loc);
-            int exitStat2 = WEXITSTATUS(stat_loc2);
-            fprintf(stderr, "%s: $? = %d\n", argv[1], exitStat1);
-            fprintf(stderr, "%s: $? = %d\n", argv[posSecondArg], exitStat2);
-            //exit(0);
-        }
-
-    //fprintf(stderr, "this\n");
-        exit(0);
-    }
+    /*
+    I created a separate method to continue the forking
+    and executions of the commands so that it would be more
+    modular
+    */
+    forker(argc, argv, arg2);
     return 0;
 }
