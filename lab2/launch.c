@@ -21,7 +21,7 @@ void forkNLaunch(int argc, char *argv[]) {
     fprintf(stderr, "%s: $$ = %d\n", argv[1], pid); //parent prints the pid of child on stderr
     waitpid(pid, &status,0);
 
-    exitStat = WEXITSTATUS(status);
+    exitStat = WEXITSTATUS(status); //exit status of the child
 
     fprintf(stderr, "%s: $? = %d \n", argv[1], exitStat); //parent prints the exit status of child on stderr
     exit(0);
