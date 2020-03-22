@@ -11,7 +11,7 @@ CFLAGS=-g
 all: $(EXECUTABLE)
 
 
-$(EXECUTABLE: $(SRC)
+$(EXECUTABLE): $(SRC)
 	$(CC) $(CFLAGS) -c $(SRC)
 	$(CC) $(CFLAGS) -o $@ $(OBJ)
 
