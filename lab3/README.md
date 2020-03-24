@@ -17,3 +17,11 @@ made it so the program knows which signals to look out for
 cleaned up hasNonSig function a little
 
 made a global array that holds all the possible signals so that we can read from it
+
+got rid of unnecessary global variable
+
+3/24/20
+
+cleaned up the code a bit, made functions more readable
+
+finished commenting on code

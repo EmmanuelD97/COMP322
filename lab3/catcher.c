@@ -11,90 +11,119 @@ Emmanoel Dermkrdichyan lab3 catcher
 #include <string.h>
 #include <time.h>
 
-int terminator = 0; //term signal counter
-int sigsCaught = 0; //number of signals caught by handler
+/*
+SIGTERM counter, there was no way to increment in the handler so this was the best option.
+*/
+int terminator = 0;
 
-static const char signalInp[31][6] = {"HUP","INT","QUIT","ILL","TRAP","ABRT","EMT","FPE"
-                                      ,"KILL","BUS","SEGV","SYS","PIPE","ALRM","TERM","URG"
-                                      ,"STOP","STP","CONT","CHILD","TTIN","TTOU","IO","XCPU"
-                                      ,"XFSZ","VTALRM","PROF","WINCH","INFO","USR1","USR2"};
+/*
+Static constant array used to keep track of all possible signals we are responsible for.
+The reason its global is because we need to access it from multiple places and we it is constant.
+*/
+static const char signalInp[27][6] = {"HUP","INT","QUIT","ILL","TRAP","ABRT","IOT"
+                                    ,"BUS","FPE","USR1","SEGV","USR2","PIPE","ALRM"
+                                    ,"TERM","STKFLT","CHLD","CONT","TSTP","TTIN"
+                                    ,"TTOU","URG","XCPU","XFSZ","VTALRM","PROF","WINCH"};
 
 void printPID() {
+  /*
+  Simple function used to print the pid.
+  */
   int pid = getpid();
   fprintf(stderr, "catcher: $$ = %d\n", pid);
 }
 
-void printTotalCT(int totalSigCount) {
-  fprintf(stderr, "catcher: Total signals count = %d\n", totalSigCount);
-}
-
-int whatToCatch(int argc, char **argv, int numberOfSigArgs, int indexToCatch[]) {
-  int count = 0;
-  for (int i = 1; i <= numberOfSigArgs; i++) {
-    for (int j = 0; j < 31; j++) {
-      if (strcmp(signalInp[j], argv[i]) == 0) {
-        indexToCatch[count] = j;
-        count++;
-      }
-    }
-  }
+void printTotalCT(int signalsCaught) {
+  /*
+  Final print statement which says the number of signals caught.
+  */
+  fprintf(stderr, "catcher: Total signals count = %d\n", signalsCaught);
 }
 
 void handler(int sig) {
+  /*
+  Prints what signal was caught and at what time.
+  */
+  printf("SIG%s caught at %ld\n", signalInp[sig - 1],time(NULL));
 
-  printf("SIG%s caught at %ld\n", signalInp[sig - 1],time(NULL));//change 1 to the index of signal caught
-  sigsCaught++;
-
-  if(sig == 15) {
+  /*
+  Signal received is SIGTERM so we increment terminate counter.
+  */
+  if(sig == SIGTERM) {
     terminator++;
   }
-  else if(sig != 15) {
-    terminator = 0; //resetting the term counter until we have 3 consequtive terms
+  /*
+  Resetting the term counter until we have 3 consequtive terms.
+  */
+  else if(sig != SIGTERM) {
+    terminator = 0;
   }
 }
 
-int hasNonSig(int argc, char **argv) {
-  if (argv[argc - 1][0] == '>' || argv[argc - 1][0] == '|') {
-    return argc - 1;
-  }
-  else {
-    return argc;
-  }
-}
-
-void catcher(int argc, char **argv, int indexToCatch[]) {
-  int nonSig = 0;
-  int argCount = argc;
-
-  printPID();
-
-  nonSig = hasNonSig(argc, argv);
-  argCount = argCount - nonSig;
-
-  for (int i = 1; i < argc; i++) { //argc used to be argCount
-    for (int j = 0; j < 31; j++) {
+void registerSign(int argc, char **argv) {
+  /*
+  Goes through every argument and matches it with signals.
+  */
+  for (int i = 1; i < argc; i++) {
+    for (int j = 0; j < 27; j++) {
+      /*
+      We use this if statement to make sure that the signal is one we have to catch.
+      If the signal matches the argument then we register it.
+      */
       if (strcmp(argv[i],signalInp[j]) == 0) {
         signal(j + 1, handler);
+        /*
+        If signal() returns an error we print an error
+        message.
+        */
         if (signal(j + 1, handler) == SIG_ERR) {
           fprintf(stderr, "signal error\n");
         }
       }
     }
   }
-  while (terminator < 3) {
+}
+
+void catcher(int argc, char **argv) {
+  int signalsCaught = 0;
+  printPID();
+
+  /*
+  Registering the signals for the first time.
+  */
+  registerSign(argc, argv);
+
+  /*
+  We pause until the program receives 3 consecutive terminate signals.
+  */
+  do {
     pause();
-  }
-  printTotalCT(sigsCaught);
+    signalsCaught++;
+
+  } while (terminator != 3);
+
+  /*
+  If we get to this point it means that we have received 3 consecutive
+  term signals therefore we can register the signals again and then terminate.
+  */
+  registerSign(argc, argv);
+
+  /*
+  Printing the final count of signals count.
+  */
+  printTotalCT(signalsCaught);
+
+  /*
+  Received 3 consecutive terminate signals so we exit successfully.
+  */
+  exit(EXIT_SUCCESS);
+
 }
 
 int main(int argc, char **argv) {
-  //im initializing these here so I can pass them between handler and catcher
-  //without resetting the values of both
-  int numberOfSigArgs = (hasNonSig(argc, argv) - 1);
-  int indexToCatch[numberOfSigArgs];
-
-  whatToCatch(argc, argv, numberOfSigArgs, indexToCatch);
-
-  catcher(argc, argv, indexToCatch);
+  /*
+  Catcher takes care of main logic, it brings all the functions together.
+  */
+  catcher(argc, argv);
   return 0;
 }
