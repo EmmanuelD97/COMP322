@@ -3,19 +3,21 @@ Emmanoel Dermkrdichyan lab3 catcher
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/errno.h>
 #include <string.h>
+#include <time.h>
 
 int terminator = 0; //term signal counter
-static const char signals [38][16] = {"SIGABRT", "SIGALRM", "SIGBUS", "SIGCHLD", "SIGCLD", "SIGCONT", "SIGEMT", "SIGFPE", "SIGHUP"
-                                  "SIGILL", "SIGINFO", "SIGINT", "SIGIO", "SIGIOT", "SIGKILL", "SIGLOST", "SIGPIPE", "SIGPOLL"
-                                  "SIGPROF", "SIGPWR", "SIGQUIT", "SIGSEGV", "SIGSTKFLT", "SIGSTOP", "SIGTSTP", "SIGSYS"
-                                  "SIGTERM", "SIGTRAP", "SIGTTIN", "SIGTTOU", "SIGUNUSED", "SIGURG", "SIGUSR1", "SIGUSR2"
-                                  "SIGVTALRM", "SIGXCPU", "SIGXFSZ", "SIGWINCH"};
-static const char signalInp[33][11] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT", "BUS", "FPE", "KILL", "USR1", "SEGV", "USR2", "PIPE", "ALRM", "TERM", "STKFLT", "CHLD", "CONT", "STOP", "TSTP", "TTIN", "TTOU", "URG", "XCPU", "XFSZ", "VTALRM", "PROF", "WINCH", "IO", "PWR", "SYS", "IOT", "POLL"};
+int sigsCaught = 0; //number of signals caught by handler
+
+static const char signalInp[31][6] = {"HUP","INT","QUIT","ILL","TRAP","ABRT","EMT","FPE"
+                                      ,"KILL","BUS","SEGV","SYS","PIPE","ALRM","TERM","URG"
+                                      ,"STOP","STP","CONT","CHILD","TTIN","TTOU","IO","XCPU"
+                                      ,"XFSZ","VTALRM","PROF","WINCH","INFO","USR1","USR2"};
 
 void printPID() {
   int pid = getpid();
@@ -29,7 +31,7 @@ void printTotalCT(int totalSigCount) {
 int whatToCatch(int argc, char **argv, int numberOfSigArgs, int indexToCatch[]) {
   int count = 0;
   for (int i = 1; i <= numberOfSigArgs; i++) {
-    for (int j = 0; j < 33; j++) {
+    for (int j = 0; j < 31; j++) {
       if (strcmp(signalInp[j], argv[i]) == 0) {
         indexToCatch[count] = j;
         count++;
@@ -39,8 +41,16 @@ int whatToCatch(int argc, char **argv, int numberOfSigArgs, int indexToCatch[]) 
 }
 
 void handler(int sig) {
-  int whichSig = 0;
 
+  printf("SIG%s caught at %ld\n", signalInp[sig - 1],time(NULL));//change 1 to the index of signal caught
+  sigsCaught++;
+
+  if(sig == 15) {
+    terminator++;
+  }
+  else if(sig != 15) {
+    terminator = 0; //resetting the term counter until we have 3 consequtive terms
+  }
 }
 
 int hasNonSig(int argc, char **argv) {
@@ -52,39 +62,39 @@ int hasNonSig(int argc, char **argv) {
   }
 }
 
-void catcher(int argc, char **argv, int termCount, int totalSigCount) {
+void catcher(int argc, char **argv, int indexToCatch[]) {
   int nonSig = 0;
   int argCount = argc;
-  printPID();
 
+  printPID();
 
   nonSig = hasNonSig(argc, argv);
   argCount = argCount - nonSig;
 
-  for (int i = 1; i < argCount; i++) {
-    signal(*argv[i], handler);
-    totalSigCount++;
+  for (int i = 1; i < argc; i++) { //argc used to be argCount
+    for (int j = 0; j < 31; j++) {
+      if (strcmp(argv[i],signalInp[j]) == 0) {
+        signal(j + 1, handler);
+        if (signal(j + 1, handler) == SIG_ERR) {
+          fprintf(stderr, "signal error\n");
+        }
+      }
+    }
   }
-  if (signal(SIGINT, handler) == SIG_ERR) {
-    fprintf(stderr, "signal error\n");
+  while (terminator < 3) {
+    pause();
   }
-
-
-  //pause();
-
-  printTotalCT(totalSigCount);
+  printTotalCT(sigsCaught);
 }
 
 int main(int argc, char **argv) {
   //im initializing these here so I can pass them between handler and catcher
   //without resetting the values of both
-  int termCount = 0; //# of term signals caught
-  int totalSigCount = 0; //total # of signals caught
   int numberOfSigArgs = (hasNonSig(argc, argv) - 1);
   int indexToCatch[numberOfSigArgs];
 
   whatToCatch(argc, argv, numberOfSigArgs, indexToCatch);
 
-  catcher(argc, argv, termCount, totalSigCount);
+  catcher(argc, argv, indexToCatch);
   return 0;
 }
