@@ -8,11 +8,19 @@ Emmanoel Dermkrdichyan Lab 4 - Rice, Rice, and Rice
 #include <pthread.h>
 #include <unistd.h>
 
+void termHandler(int signum) {
+	//remove the philosopher from the eat-think cycle
+	//release any system resources sem_destroy(3) sem_close(3) sem_unlink(3)
 
-
+	fprintf(stderr, "Philosopher #%d completed %d cycles\n", pNum, numCycles);
+	exit(EXIT_SUCCESS);
+}
 
 void dining(int argc, char **argv) {
-	/*semaphore chopstick[5];
+	sem_t chopstick[5];
+
+	signal(SIGTERM, termHandler);
+
 
 	do {
 		wait(chopstick[i]);
@@ -22,7 +30,9 @@ void dining(int argc, char **argv) {
 		signal(chopstick[i]);
 		signal(chopstick[(i + 1) % 5]);
 
-	} while (true);*/
+		//signal(SIGTERM, signal_handler);
+
+	} while (true);
 }
 
 void eating (int pNum) {
@@ -36,13 +46,6 @@ void thinking (int pNum) {
 	usleep(rand());
 }
 
-void philosopherFull (int pNum, int numCycles) {
-	//release any system resources sem_destroy(3) sem_close(3) sem_unlink(3)
-
-	fprintf(stderr, "Philosopher #%d completed %d cycles\n", pNum, numCycles);
-	exit(EXIT_SUCCESS);
-
-}
 int main(int argc, char **argv) {
   /*
   Catcher takes care of main logic, it brings all the functions together.
