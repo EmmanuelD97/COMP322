@@ -12,7 +12,7 @@ all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(SRC)
 	$(CC) $(CFLAGS) -c $(SRC)
-	$(CC) $(CFLAGS) -lpthread -o $@ $(OBJ)
+	$(CC) $(CFLAGS) -pthread -o $@ $(OBJ)
 
 CLEAN:
 	rm -f $(EXECUTABLE) $(OBJ) *~

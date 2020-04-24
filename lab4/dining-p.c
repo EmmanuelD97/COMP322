@@ -84,17 +84,12 @@ int main(int argc, char **argv) {
 	sem_t chopstick[(seats + 1)];
 
 
-	if(argc < 3) {
-		printf("Not enough arguments. (needs 2)\n");
-		exit(EXIT_FAILURE);
-	}
-	else if (argc > 3) {
-		printf("Too many arguments. (needs 2)\n");
+	if(argc != 3) {
+		printf("Wrong number of arguments. (needs 2)\n");
 		exit(EXIT_FAILURE);
 	}
 
-	int shm_fd = shm_open(argv[2], O_CREAT | O_EXCL, 0666);
-	mmap(0, seats * 32, PROT_READ, MAP_SHARED, shm_fd, 0);
+	//int shm_fd = shm_open(argv[2], O_CREAT | O_EXCL, 0666);
 
 
 
