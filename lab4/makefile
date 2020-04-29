@@ -1,18 +1,24 @@
-#Emmanoel Dermkrdichyan
-#lab4 makefile
+IDIR = include
+CC = gcc
+CFLAGS = -I$(IDIR) -Wall -Wextra -g
+LIBS = -pthread
 
-EXECUTABLE=dining-p
-SRC=dining-p.c
-OBJ=dining-p.o
+OBJ = dining-p.o
+SRC = dining-p.c
+EXEC_NAME = dining-p 
 
-CC=gcc
-CFLAGS=-g
+all: $(OBJ) 
+	$(CC) $(CFLAGS) -o $(EXEC_NAME) $(OBJ) $(LIBS)
+	rm $(OBJ)
 
-all: $(EXECUTABLE)
+dining-p: $(OBJ)
+	$(CC) $(CFLAGS) -o $(EXEC_NAME) $(OBJ) $(LIBS)
+	rm $(OBJ)
 
-$(EXECUTABLE): $(SRC)
-	$(CC) $(CFLAGS) -c $(SRC)
-	$(CC) $(CFLAGS) -pthread -o $@ $(OBJ)
+dining-p.o: $(SRC)
+	$(CC) $(CFLAGS) -g -c $(SRC)
 
-CLEAN:
-	rm -f $(EXECUTABLE) $(OBJ) *~
+clean:
+	rm -f $(EXEC_NAME)
+	rm -f $(OBJ)
+	rm -f groupID.txt
