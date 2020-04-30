@@ -75,7 +75,7 @@ void termReceived(int position, int seats, int totalCycles, sem_t** semAddr, sem
 	exit(EXIT_SUCCESS);
 }
 
-void groupFile() {
+void groupIDSet() {
     FILE *file;
     struct stat sb;
     char* line = NULL;
@@ -100,9 +100,9 @@ void groupFile() {
     }
 }
 
-int criticalSection(int returnVal, sem_t* critStix) {
+int criticalSection(int returnVal, sem_t* criticalSem) {
     if (returnVal == 2) {
-        if (sem_trywait(critStix) < 0) {
+        if (sem_trywait(criticalSem) < 0) {
         	return 0;
         }
         else {
@@ -110,7 +110,7 @@ int criticalSection(int returnVal, sem_t* critStix) {
         }
     } 
     else if (returnVal == 3) {
-        sem_post(critStix);
+        sem_post(criticalSem);
         return 1;
     }
     else {
@@ -120,10 +120,10 @@ int criticalSection(int returnVal, sem_t* critStix) {
 
 
 int main(int argc, char **argv) {
-	printf("PID: %d\n", getpid());
+	//printf("PID: %d\n", getpid());
 	sem_t** semAddr;
 	sem_t* semCrit;
-	groupFile();
+	groupIDSet();
 	int cycleCt = 0;
 	int seats = atoi(argv[1]);
 	int position = atoi(argv[2]);

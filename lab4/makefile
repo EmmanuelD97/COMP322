@@ -1,24 +1,19 @@
-IDIR = include
-CC = gcc
-CFLAGS = -I$(IDIR) -Wall -Wextra -g
-LIBS = -pthread
+#Emmanoel Dermkrdichyan
+#lab4 makefile
 
-OBJ = dining-p.o
-SRC = dining-p.c
-EXEC_NAME = dining-p 
+EXECUTABLE=dining-p
+SRC=dining-p.c
+OBJ=dining-p.o
 
-all: $(OBJ) 
-	$(CC) $(CFLAGS) -o $(EXEC_NAME) $(OBJ) $(LIBS)
-	rm $(OBJ)
+CC=gcc
+CFLAGS=-g
 
-dining-p: $(OBJ)
-	$(CC) $(CFLAGS) -o $(EXEC_NAME) $(OBJ) $(LIBS)
-	rm $(OBJ)
+all: $(EXECUTABLE)
 
-dining-p.o: $(SRC)
-	$(CC) $(CFLAGS) -g -c $(SRC)
+$(EXECUTABLE): $(SRC)
+	$(CC) $(CFLAGS) -c $(SRC)
+	$(CC) $(CFLAGS) -pthread -o $@ $(OBJ)
 
-clean:
-	rm -f $(EXEC_NAME)
-	rm -f $(OBJ)
-	rm -f groupID.txt
+CLEAN:
+	rm -f $(EXECUTABLE) $(OBJ) *~
+	rm -f pgid.txt
