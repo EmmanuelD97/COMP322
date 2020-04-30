@@ -34,7 +34,7 @@ void thinking (int pos) {
 	usleep(rand() % 888888);
 }
 
-void termReceived(int position, int seats, int totalCycles, sem_t** semAddr) {
+void termReceived(int position, int seats, int totalCycles, sem_t** semAddr, sem_t* semCrit) {
 	char chop[10];
 
 	fprintf(stderr, "Philosopher #%d completed %d cycles.\n", position, totalCycles);
@@ -67,35 +67,62 @@ void termReceived(int position, int seats, int totalCycles, sem_t** semAddr) {
 		sem_destroy(semAddr[position]);
 		sem_destroy(semAddr[position + 1]);
 	}
+
+	sem_close(semCrit);
+	sem_unlink("criticalSec");
+	sem_destroy(semCrit);
+
 	exit(EXIT_SUCCESS);
 }
 
-void groupFile() { //DELETE OR CHANGE
-    FILE *fptr;
-    struct stat buf;
+void groupFile() {
+    FILE *file;
+    struct stat sb;
     char* line = NULL;
     size_t len = 0;
-    if (stat("pgid.txt", &buf) == 0) {
-        fptr = fopen("pgid.txt", "r");
-        getline(&line, &len, fptr);
-        //printf("%d", getpid());
-        if (setpgid(getpid(), strtol(line, NULL, 10)) != 0) {
-            perror("setpgid() error");
-        }
-        fclose(fptr);
+
+
+    if (stat("pgid.txt", &sb) == 0) {
+        file = fopen("pgid.txt", "r");
+
+        getline(&line, &len, file);
+
+        fclose(file);
     } else {
-        char buffer[32];
-        memset(buffer, '\0', 32);
-        fptr = fopen("pgid.txt", "w");
-        sprintf(buffer, "%d", getpgid(getpid()));
-        fwrite(buffer, sizeof (char), sizeof (buffer), fptr);
-        fclose(fptr);
+        char writer[64];
+        memset(writer, '\0', 64);
+        file = fopen("pgid.txt", "w");
+
+        sprintf(writer, "%d", getpgid(getpid()));
+        fwrite(writer, sizeof (char), sizeof (writer), file);
+
+        fclose(file);
     }
 }
 
+int criticalSection(int returnVal, sem_t* critStix) {
+    if (returnVal == 2) {
+        if (sem_trywait(critStix) < 0) {
+        	return 0;
+        }
+        else {
+        	return 1;
+        }
+    } 
+    else if (returnVal == 3) {
+        sem_post(critStix);
+        return 1;
+    }
+    else {
+    	return 1;
+    }
+}
+
+
 int main(int argc, char **argv) {
 	printf("PID: %d\n", getpid());
-	sem_t** semAddr; //used to be global
+	sem_t** semAddr;
+	sem_t* semCrit;
 	groupFile();
 	int cycleCt = 0;
 	int seats = atoi(argv[1]);
@@ -114,43 +141,27 @@ int main(int argc, char **argv) {
 
 	signal(SIGTERM, signalHandler);
 
-	for (int i = 0; i < seats; i++) { //original way to open sem
+	for (int i = 0; i < seats; i++) {
 		sprintf(str, "chopSt%d", i);
-		semAddr[i] = sem_open(str, O_CREAT|O_EXCL, 0666, 1);
+		semAddr[i] = sem_open(str, O_CREAT, 0666, 1);
 	}
 
+	semCrit = sem_open("criticalSec", O_CREAT, 0666, 1); //used to moderate critical section
+
 	do {
-		printf("POS: %d PID: %d\n", position, getpid());
-		int ret1 = sem_wait(semAddr[position % seats]);
-		int ret2 = sem_wait(semAddr[(position + 1) % seats]);
-		printf("pos: %d %d %d\n", position,ret1,ret2);
-
-		eating(position);
-
-		int ret3 = sem_post(semAddr[position % seats]);
-		int ret4 = sem_post(semAddr[(position + 1) % seats]);
-		printf("pos: %d %d %d\n", position,ret3,ret4);
-
-		thinking(position);
-		cycleCt++;
+		if(criticalSection(2, semCrit) == 1) {
+			if ((sem_wait(semAddr[position % seats])) != -1 && (sem_wait(semAddr[(position + 1) % seats]) != -1)) {
+				eating(position);
+			}
+			if ((sem_post(semAddr[position % seats])) != -1 && (sem_post(semAddr[(position + 1) % seats]) != -1)) {
+				thinking(position);
+			}
+			cycleCt++;
+			criticalSection(3, semCrit);
+		}
 
 	} while (termFlag == 0);
 
+	termReceived(position, seats, cycleCt, semAddr, semCrit);
 
-	/*for (int i = 0; i < seats; i++) {
-	sem_close(semAddr[i]);
-
-	sprintf(toper, "chopSt%d", i);
-	sem_unlink(toper);
-
-	sem_destroy(semAddr[i]);
-
-	printf("trying to delete\n");
-
-	}*/
-
-	termReceived(position, seats, cycleCt, semAddr);
-
-
-	//exit(EXIT_SUCCESS);
 }
