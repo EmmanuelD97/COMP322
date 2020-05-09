@@ -1,5 +1,5 @@
 #Emmanoel Dermkrdichyan
-#lab3 makefile
+#lab5 makefile
 
 EXECUTABLE=lab5
 SRC=lab5.c
