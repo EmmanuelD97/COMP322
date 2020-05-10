@@ -5,9 +5,9 @@ EXECUTABLE=spiritd
 SRC=spiritd.c
 OBJ=spiritd.o
 
-EXECUTABLEM=moles
-SRCM=moles.c
-OBJM=moles.o
+EXECUTABLEM=mole
+SRCM=mole.c
+OBJM=mole.o
 
 CC=gcc
 CFLAGS=-g
