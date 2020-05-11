@@ -38,15 +38,15 @@ void signalHandler(int sigNumber) {
 		char* moleV[] = {"mole", moleNum, NULL};
 
 		if (randMolNum == 1) {
-			kill(firstMole, SIGCHLD);
+			kill(firstMole, SIGCHLD); //SIGCHLD
 			firstMole = fork();
 
 			if (firstMole == 0) {
-				execv(moleV[0], moleV);
+				execv(moleV[0], moleV); 
 			}
 		}
 		else if (randMolNum == 2) {
-			kill(firstMole, SIGCHLD);
+			kill(firstMole, SIGCHLD); //SIGCHLD
 			secondMole = fork();
 
 			if (secondMole == 0) {
