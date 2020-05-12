@@ -18,6 +18,9 @@ static pid_t secondMole;  //we need to have them as global
 
 int termReceived = 0;
 
+int moleBackUp1;
+int moleBackUp2;
+
 void signalHandler(int sigNumber) {
 	int randMolNum = 0;
 	char* moleNum;
@@ -25,17 +28,17 @@ void signalHandler(int sigNumber) {
 
 	if (sigNumber == SIGTERM) {
 		termReceived = 1;
-		kill(firstMole, SIGTERM);
-		kill(secondMole, SIGTERM);
+		kill(firstMole, SIGKILL);
+		kill(secondMole, SIGKILL);
 
 		exit(EXIT_SUCCESS);
 	}
 	else if (sigNumber == SIGUSR1 || sigNumber == SIGUSR2) {
-		if (sigNumber == SIGUSR1) {
-			kill(firstMole, SIGCHLD); //SIGCHLD
+		if (sigNumber == SIGUSR1 && firstMole != 0) {
+			kill(firstMole, SIGKILL); //SIGCHLD
 		}
-		else if (sigNumber == SIGUSR1) {
-			kill(secondMole, SIGCHLD); //SIGCHLD
+		else if (sigNumber == SIGUSR1 && secondMole != 0) {
+			kill(secondMole, SIGKILL); //SIGCHLD
 		}
 		/* 
 		Upon SIG_USR1, the program will
@@ -53,16 +56,22 @@ void signalHandler(int sigNumber) {
 		char* moleV[] = {"mole", moleNum, NULL};
 
 		if (randMolNum == 1) {
-			kill(firstMole, SIGCHLD); //SIGCHLD //i dont think im killing the moles correctly
+			if (firstMole == moleBackUp1) {
+				kill(firstMole, SIGKILL); //SIGCHLD //i dont think im killing the moles correctly
+			}
 			firstMole = fork();			// so its not limiting their number
+			moleBackUp1 = firstMole;
 
 			if (firstMole == 0) {
 				execv(moleV[0], moleV); 
 			}
 		}
 		else if (randMolNum == 2) {
-			kill(firstMole, SIGCHLD); //SIGCHLD
+			if (secondMole == moleBackUp2) {
+				kill(firstMole, SIGKILL); //SIGCHLD SIGKILL
+			}
 			secondMole = fork();
+			moleBackUp2 = secondMole;
 
 			if (secondMole == 0) {
 				execv(moleV[0], moleV);
