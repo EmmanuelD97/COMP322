@@ -35,20 +35,12 @@ void signalHandler(int sigNumber) {
 	}
 	else if (sigNumber == SIGUSR1 || sigNumber == SIGUSR2) {
 		if (sigNumber == SIGUSR1 && firstMole != 0) {
-			kill(firstMole, SIGKILL); //SIGCHLD
+			kill(firstMole, SIGKILL);
 		}
-		else if (sigNumber == SIGUSR1 && secondMole != 0) {
-			kill(secondMole, SIGKILL); //SIGCHLD
+		else if (sigNumber == SIGUSR2 && secondMole != 0) {
+			kill(secondMole, SIGKILL);
 		}
-		/* 
-		Upon SIG_USR1, the program will
-		kill child process #1 (mole1)
-		randomly create either mole1 or mole 2 if it does not already exists
-		Upon SIG_USER2, the program will
-		kill child process #1 (mole2)
-		randomly create either mole1 or mole 2 if it does not already exists
 
-		*/
 		signal(sigNumber, signalHandler);
 
 		randMolNum = (rand() % (2 - 1 + 1)) + 1;
@@ -56,9 +48,10 @@ void signalHandler(int sigNumber) {
 		char* moleV[] = {"mole", moleNum, NULL};
 
 		if (randMolNum == 1) {
-			if (firstMole == moleBackUp1) {
+			if (firstMole != 0) {
 				kill(firstMole, SIGKILL); //SIGCHLD //i dont think im killing the moles correctly
 			}
+
 			firstMole = fork();			// so its not limiting their number
 			moleBackUp1 = firstMole;
 
@@ -67,9 +60,10 @@ void signalHandler(int sigNumber) {
 			}
 		}
 		else if (randMolNum == 2) {
-			if (secondMole == moleBackUp2) {
-				kill(firstMole, SIGKILL); //SIGCHLD SIGKILL
+			if (secondMole != 0) {
+				kill(secondMole, SIGKILL); //SIGCHLD SIGKILL
 			}
+
 			secondMole = fork();
 			moleBackUp2 = secondMole;
 
