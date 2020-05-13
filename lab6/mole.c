@@ -14,7 +14,8 @@ void mole(int argc, char **argv) {
 	char moleN[10];
 
 	if (file != 0 && argc > 1) {
-		sprintf(moleN, "Pop mole%d", atoi(argv[1]));
+		//sprintf(moleN, "Pop mole%d", atoi(argv[0]));
+		fprintf(file, "Pop %s\n", argv[0]);
 		fputs(moleN, file);
 
 		fclose(file);
