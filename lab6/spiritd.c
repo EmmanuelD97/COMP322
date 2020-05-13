@@ -21,43 +21,50 @@ void signalHandler(int sigNumber) {
 	char* pickedName;
 
 	if (sigNumber == SIGTERM) {
+		//kill both moles and set termflag to 1
+		//to indicate exiting successfully
 		termReceived = 1;
 		kill(mole1, SIGKILL);
 		kill(mole2, SIGKILL);
-
-		exit(EXIT_SUCCESS);
 	}
 	else if (sigNumber == SIGUSR1 || sigNumber == SIGUSR2) {
 		if (sigNumber == SIGUSR1 && mole1 != 0) {
+			//if SIGUSR1 and mole1 is not the child kill mole1
 			kill(mole1, SIGKILL);
 		}
 		else if (sigNumber == SIGUSR2 && mole2 != 0) {
+			//if SIGUSR2 and mole2 is not the child kill mole2
 			kill(mole2, SIGKILL);
 		}
 
 		signal(sigNumber, signalHandler);
 
+		//picks a random number either 1 or 2
 		randMolNum = (rand() % (2 - 1 + 1)) + 1;
 
-		char* moleV[] = {"mole", randMolNum, NULL};
+		char* moleV[] = {"mole", moleNum, NULL};
 
+		//if picks number1
+		//kill mole1 and create a new mole1
 		if (randMolNum == 1) {
 			if (mole1 != 0) {
-				kill(mole1, SIGKILL); //SIGCHLD //i dont think im killing the moles correctly
+				kill(mole1, SIGKILL);
 			}
 
-			mole1 = fork();			// so its not limiting their number
+			mole1 = fork(); //new mole1
 
 			if (mole1 == 0) {
 				execv(moleV[0], moleV); 
 			}
 		}
+		//if picks number2
+		//kill mole2 and create a new mole2
 		else if (randMolNum == 2) {
 			if (mole2 != 0) {
-				kill(mole2, SIGKILL); //SIGCHLD SIGKILL
+				kill(mole2, SIGKILL);
 			}
 
-			mole2 = fork();
+			mole2 = fork(); //new mole2
 
 			if (mole2 == 0) {
 				execv(moleV[0], moleV);
@@ -117,6 +124,8 @@ int daemonFork() {
 void main (int argc, char** argv) {
 	int procRet = 0;
 
+	//calling the process that forks for daemon
+	//and starts the entire process
 	procRet = daemonFork();
 
 	if (procRet == 1) {
