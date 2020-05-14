@@ -17,8 +17,13 @@ void main () {
 	int startTime = time(NULL);
 	srand(time(0));
 	int scalar = (rand() % (100 + 100 + 1)) - 100;
+	int size = atoi(argv[1]);
+	int blocks = atoi(argv[2]);
+	int blockSize = size / blocks;
 
-
+	//size * size * 4 4k
+	//block * block * 12 offset
+	matrix_add ()
 	//printf("%d\n%d\n", startTime,scalar);
 
 }
