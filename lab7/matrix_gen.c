@@ -5,6 +5,7 @@ Emmanoel Dermkrdichyan - lab 7 - matrix_gen
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 /*
 Since were just using > to place the output into a file all
@@ -24,6 +25,7 @@ void matrixGen(int size) {
 }
 
 void main (int argc, char** argv) {
+	srand(time(0));
 	int size = 0;
 	size = atoi(argv[1]); //first argument is the size of the matrix
 
