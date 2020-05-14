@@ -19,7 +19,7 @@ $(EXECUTABLEG): $(SRCG)
 	$(CC) $(CFLAGS) -c $(SRCG)
 	$(CC) $(CFLAGS) -o $@ $(OBJG)
 
-$(EXECUTABLEA): $(SRCM)
+$(EXECUTABLEA): $(SRCA)
 	$(CC) $(CFLAGS) -c $(SRCA)
 	$(CC) $(CFLAGS) -o $@ $(OBJA)
 

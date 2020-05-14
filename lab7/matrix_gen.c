@@ -25,6 +25,7 @@ void matrixGen(int size) {
 }
 
 void main (int argc, char** argv) {
+	//seed for random
 	srand(time(0));
 	int size = 0;
 	size = atoi(argv[1]); //first argument is the size of the matrix
