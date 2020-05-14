@@ -1,3 +1,17 @@
+DISCLAIMER: I havent got it to write to the log file so the way it is set up now I have to run 
+
+./spiritd and it prints the daemon pid. In a separate terminal I can do ps -ajx to check to see
+
+ how many moles are running. I can pass it the USR1 and USR2 signals to create new moles.
+
+ It works for the most part because creates moles and kills moles correctly and only allows up 
+
+to 3 processes to run at a time. I am still working on the log file issue and if I can fix 
+
+that issue I will remove the disclaimer.
+
+
+
 Wack a Mole - Lab 6
 
 5/9/20
