@@ -13,7 +13,7 @@ void matrix_add (int block[M][N], int size, int scalar) {
 	}
 }
 
-void main () {
+void main (int argc, char** argv) {
 	int startTime = time(NULL);
 	srand(time(0));
 	int scalar = (rand() % (100 + 100 + 1)) - 100;
@@ -21,9 +21,18 @@ void main () {
 	int blocks = atoi(argv[2]);
 	int blockSize = size / blocks;
 
+	char buffer[1000];
+	for (int i = 0; i < size; i++) {
+		fgets(buffer, 10000, stdin);
+		printf("%s", buffer);
+	}
+	//fgets(buffer, 10000, stdin);
+
+	printf("should be first: %d\nshould be second: %d\n", size,blocks);
+	printf("num of args: %d\n", argc);
 	//size * size * 4 4k
 	//block * block * 12 offset
-	matrix_add ()
+	//matrix_add ();
 	//printf("%d\n%d\n", startTime,scalar);
 
 }
