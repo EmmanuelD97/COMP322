@@ -20,16 +20,18 @@ void main (int argc, char** argv) {
 	int size = atoi(argv[1]);
 	int blocks = atoi(argv[2]);
 	int blockSize = size / blocks;
+	int bufferSize = atoi(argv[1]) * 5;
 
-	char buffer[1000];
+
+	char buffer[bufferSize];
 	for (int i = 0; i < size; i++) {
-		fgets(buffer, 10000, stdin);
+		fgets(buffer, bufferSize, stdin);
 		printf("%s", buffer);
 	}
 	//fgets(buffer, 10000, stdin);
 
-	printf("should be first: %d\nshould be second: %d\n", size,blocks);
-	printf("num of args: %d\n", argc);
+	//printf("should be first: %d\nshould be second: %d\n", size,blocks);
+	//printf("num of args: %d\n", argc);
 	//size * size * 4 4k
 	//block * block * 12 offset
 	//matrix_add ();
