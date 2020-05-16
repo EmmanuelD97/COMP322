@@ -18,7 +18,7 @@ void matrixGen(int size) {
 		for (int j = 0; j < size; j++){
 			//generates a random integer from -100 to 100
 			randomElement = (rand() % (100 + 100 + 1)) - 100;
-			printf("%d ", randomElement);
+			printf("%4d ", randomElement);
 		}
 		printf("\n");
 	}
