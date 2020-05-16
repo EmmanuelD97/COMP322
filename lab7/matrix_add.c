@@ -23,15 +23,36 @@ void main (int argc, char** argv) {
 	int blockSize = size / blocks;
 	int bufferSize = atoi(argv[1]) * 5;
 
+	#define BUF_SIZE 111
+	unsigned char buf[BUF_SIZE];
+	unsigned char check[BUF_SIZE];
+
 	struct aiocb aiocb;
 
+	memset(check, 0xaa, BUF_SIZE);
 	memset(&aiocb, 0, sizeof(struct aiocb));
-	aiocb.aio_fildes = fd;
+	aiocb.aio_fildes = descriptor;
 	aiocb.aio_buf = check;
 	aiocb.aio_nbytes = BUF_SIZE;
-	aiocb.aio_lio_opcode = LIO_WRITE;
+	aiocb.aio_lio_opcode = write;
 
-	
+	if (aio_read(&aiocb) == -1) {
+		printf("aio_read error\n");
+		exit(EXIT_FAILURE);
+	}
+
+	//int err;
+	//int ret;
+	aio_read(&aiocb);
+	//wait until end of transaction
+	while ((err = aio_error(&aiocb)) == EINPROGRESS);
+
+	//err = aio_error(&aiocb);
+	//ret = aio_return(&aiocb);
+
+	aio_read(&aiocb);
+
+	aio_return(&aiocb);
 
 	char buffer[bufferSize];
 	for (int i = 0; i < size; i++) {
