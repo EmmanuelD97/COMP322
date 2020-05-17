@@ -2,9 +2,47 @@
 #include <stdio.h>
 #include <time.h>
 #include <aio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/wait.h>
 
 const int M = 3;
 const int N = 3;
+
+/*struct aiocb { //I GOT THIS FROM THE MAN PAGES
+                The order of these fields is implementation-dependent 
+
+               int             aio_fildes;      File descriptor 
+               off_t           aio_offset;      File offset 
+               volatile void  *aio_buf;         Location of buffer 
+               size_t          aio_nbytes;      Length of transfer 
+               int             aio_reqprio;     Request priority 
+               struct sigevent aio_sigevent;    Notification method 
+               int             aio_lio_opcode;  Operation to be performed;
+                                                  lio_listio() only 
+
+                Various implementation-internal fields not shown 
+};*/
+
+void fill(struct aiocb *temp, off_t off, size_t blockSize) {
+	memset(temp, 0, sizeof (struct aiocb));
+	temp->aio_fildes = fileno(stdin);
+	temp->aio_nbytes = blockSize; //blockSize
+	temp->aio_offset = off;
+	temp->aio_buf = malloc(blockSize);
+	temp->aio_reqprio = 0;
+}
+
+void empty(struct aiocb *temp, off_t off) {
+	temp->aio_fildes = fileno(stdout);
+	temp->aio_nbytes = blockSize;
+	temp->aio_offset = off;
+}
+
 
 void matrix_add (int block[M][N], int size, int scalar) {
 	for (int i = 0; i < size; i++) {//he set i = 1 but doesnt make sense
@@ -16,6 +54,7 @@ void matrix_add (int block[M][N], int size, int scalar) {
 
 void main (int argc, char** argv) {
 	int startTime = time(NULL);
+	int endTime = 0;
 	srand(time(0));
 	int scalar = (rand() % (100 + 100 + 1)) - 100;
 	int size = atoi(argv[1]);
@@ -23,36 +62,40 @@ void main (int argc, char** argv) {
 	int blockSize = size / blocks;
 	int bufferSize = atoi(argv[1]) * 5;
 
-	#define BUF_SIZE 111
-	unsigned char buf[BUF_SIZE];
-	unsigned char check[BUF_SIZE];
+	struct aiocb fill;
+	struct aiocb next;
 
-	struct aiocb aiocb;
+	printf("blocksize: %d\n", blockSize);
+    //memset(fill, 0, sizeof (struct aiocb));
 
-	memset(check, 0xaa, BUF_SIZE);
-	memset(&aiocb, 0, sizeof(struct aiocb));
-	aiocb.aio_fildes = descriptor;
+    loadIn(&fill, 0);
+
+
+	aio_read(&fill);
+
+	while(aio_error(&fill) == EINPROGRESS);
+
+	aio_return(&fill);
+
+	//memset(check, 0xaa, BUF_SIZE);
+	//memset(&aiocb, 0, sizeof(struct aiocb));
+	/*aiocb.aio_fildes = descriptor;
 	aiocb.aio_buf = check;
-	aiocb.aio_nbytes = BUF_SIZE;
-	aiocb.aio_lio_opcode = write;
+	aiocb.aio_nbytes = BUF_SIZE;*/
+	//aiocb.aio_lio_opcode = write;
 
-	if (aio_read(&aiocb) == -1) {
-		printf("aio_read error\n");
-		exit(EXIT_FAILURE);
-	}
 
-	//int err;
 	//int ret;
-	aio_read(&aiocb);
+	//aio_read(&aiocb);
 	//wait until end of transaction
-	while ((err = aio_error(&aiocb)) == EINPROGRESS);
+	//while ((err = aio_error(&aiocb)) == EINPROGRESS);
 
 	//err = aio_error(&aiocb);
 	//ret = aio_return(&aiocb);
 
-	aio_read(&aiocb);
+	//aio_read(&aiocb);
 
-	aio_return(&aiocb);
+	//aio_return(&aiocb);
 
 	char buffer[bufferSize];
 	for (int i = 0; i < size; i++) {
@@ -94,7 +137,10 @@ void main (int argc, char** argv) {
 	//printf("num of args: %d\n", argc);
 	//size * size * 4 4k
 	//block * block * 12 offset
+	sleep(3);
 	//matrix_add ();
 	//printf("%d\n%d\n", startTime,scalar);
-
+	endTime = time(NULL);
+	int opTime = endTime - startTime;
+	printf("time for operation: %d", opTime);
 }
