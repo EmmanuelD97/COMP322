@@ -61,21 +61,21 @@ void main (int argc, char** argv) {
 	int blocks = atoi(argv[2]);
 	int blockSize = size / blocks;
 	int bufferSize = atoi(argv[1]) * 5;
+	int last, next;
+	int blocksSquared = (blocks * blocks);
 
 	struct aiocb fill;
 	struct aiocb next;
 
-	printf("blocksize: %d\n", blockSize);
-    //memset(fill, 0, sizeof (struct aiocb));
-
-    loadIn(&fill, 0);
-
-
+    fill(&fill, 0);
 	aio_read(&fill);
 
 	while(aio_error(&fill) == EINPROGRESS);
 
 	aio_return(&fill);
+
+	//matrix_add();
+
 
 	//memset(check, 0xaa, BUF_SIZE);
 	//memset(&aiocb, 0, sizeof(struct aiocb));
@@ -97,14 +97,22 @@ void main (int argc, char** argv) {
 
 	//aio_return(&aiocb);
 
-	char buffer[bufferSize];
+	/*char buffer[bufferSize];
 	for (int i = 0; i < size; i++) {
 		fgets(buffer, bufferSize, stdin);
 		printf("%s", buffer);
-	}
+	}*/
 
-	for (int x = 1, y = 1; x < blocks && y < blocks; x++, y++) {
+	for (int i = 0; i < blocksSquared - 1; i++) {
+		last = current - 1;
+		next = current + 1;
 
+		memcpy(next, fill, 5 * blocksSquared);
+
+		fill->aio_offset = 5 * blocksSquared * next;
+
+		aio_read(&fill);
+		
 	}
 
 
