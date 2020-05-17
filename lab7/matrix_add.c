@@ -28,7 +28,7 @@ const int N = 3;
                 Various implementation-internal fields not shown 
 };*/
 
-void fill(struct aiocb *temp, off_t off, size_t blockSize) {
+void load(struct aiocb *temp, off_t off, size_t blockSize) {
 	memset(temp, 0, sizeof (struct aiocb));
 	temp->aio_fildes = fileno(stdin);
 	temp->aio_nbytes = blockSize; //blockSize
@@ -37,7 +37,7 @@ void fill(struct aiocb *temp, off_t off, size_t blockSize) {
 	temp->aio_reqprio = 0;
 }
 
-void empty(struct aiocb *temp, off_t off) {
+void unload(struct aiocb *temp, off_t off, size_t blockSize) {
 	temp->aio_fildes = fileno(stdout);
 	temp->aio_nbytes = blockSize;
 	temp->aio_offset = off;
@@ -59,20 +59,31 @@ void main (int argc, char** argv) {
 	int scalar = (rand() % (100 + 100 + 1)) - 100;
 	int size = atoi(argv[1]);
 	int blocks = atoi(argv[2]);
-	int blockSize = size / blocks;
 	int bufferSize = atoi(argv[1]) * 5;
-	int last, next;
+	//int last, next;
 	int blocksSquared = (blocks * blocks);
+	int blockSize = size / blocks;
+	//this is because we have offset of 4 per number and we have
+	//new lines at the end of each row
+	int totChar = (4 * size * size) + size;
+
 
 	struct aiocb fill;
-	struct aiocb next;
+	struct aiocb calc;
+	struct aiocb store;
 
-    fill(&fill, 0);
+    load(&fill, 0, blockSize);
 	aio_read(&fill);
 
 	while(aio_error(&fill) == EINPROGRESS);
 
 	aio_return(&fill);
+	//filled the first block now for the for loop
+
+	for (int i = blockSize; i < totChar; i = i + blockSize) {
+		//this is where we load the next set before calculating for
+		//the first loaded block
+	}
 
 	//matrix_add();
 
@@ -104,15 +115,15 @@ void main (int argc, char** argv) {
 	}*/
 
 	for (int i = 0; i < blocksSquared - 1; i++) {
-		last = current - 1;
-		next = current + 1;
+		//last = current - 1;
+		//next = current + 1;
 
-		memcpy(next, fill, 5 * blocksSquared);
+		//memcpy(next, fill, 5 * blocksSquared);
 
-		fill->aio_offset = 5 * blocksSquared * next;
+		//fill->aio_offset = 5 * blocksSquared * next;
 
-		aio_read(&fill);
-		
+		//aio_read(&fill);
+
 	}
 
 
