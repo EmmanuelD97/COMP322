@@ -13,20 +13,6 @@
 const int M = 3;
 const int N = 3;
 
-/*struct aiocb { //I GOT THIS FROM THE MAN PAGES
-                The order of these fields is implementation-dependent 
-
-               int             aio_fildes;      File descriptor 
-               off_t           aio_offset;      File offset 
-               volatile void  *aio_buf;         Location of buffer 
-               size_t          aio_nbytes;      Length of transfer 
-               int             aio_reqprio;     Request priority 
-               struct sigevent aio_sigevent;    Notification method 
-               int             aio_lio_opcode;  Operation to be performed;
-                                                  lio_listio() only 
-
-                Various implementation-internal fields not shown 
-};*/
 
 void load(struct aiocb *temp, off_t off, size_t blockSize) {
 	memset(temp, 0, sizeof (struct aiocb));
@@ -68,21 +54,28 @@ void main (int argc, char** argv) {
 	int totChar = (4 * size * size) + size;
 
 
-	struct aiocb fill;
-	struct aiocb calc;
-	struct aiocb store;
+	struct aiocb calculate;	//gets filled first and calculations done here
+	struct aiocb fill;	//this is the one that reads blocks
+	struct aiocb store; //once calculate is done this writes back
 
-    load(&fill, 0, blockSize);
-	aio_read(&fill);
+    load(&calculate, 0, blockSize);
+	aio_read(&calculate);
 
-	while(aio_error(&fill) == EINPROGRESS);
+	while(aio_error(&calculate) == EINPROGRESS);
 
-	aio_return(&fill);
-	//filled the first block now for the for loop
+	aio_return(&calculate);
+	//calculateed the first block now for the for loop
 
 	for (int i = blockSize; i < totChar; i = i + blockSize) {
 		//this is where we load the next set before calculating for
 		//the first loaded block
+		load(&fill, i, blockSize);
+		aio_read(&fill);
+
+		while(aio_error(&calculate) == EINPROGRESS);
+		aio_return(&fill);
+		//finished filling next block
+
 	}
 
 	//matrix_add();
@@ -108,45 +101,18 @@ void main (int argc, char** argv) {
 
 	//aio_return(&aiocb);
 
-	/*char buffer[bufferSize];
-	for (int i = 0; i < size; i++) {
-		fgets(buffer, bufferSize, stdin);
-		printf("%s", buffer);
-	}*/
 
 	for (int i = 0; i < blocksSquared - 1; i++) {
 		//last = current - 1;
 		//next = current + 1;
 
-		//memcpy(next, fill, 5 * blocksSquared);
+		//memcpy(next, calculate, 5 * blocksSquared);
 
-		//fill->aio_offset = 5 * blocksSquared * next;
+		//calculate->aio_offset = 5 * blocksSquared * next;
 
-		//aio_read(&fill);
+		//aio_read(&calculate);
 
 	}
-
-
-	/*
-
-
-		last = current - 1;
-		next - current + 1;
-
-		async read request next      see aio_read(2)    
-
-		matrix_add(current, block_size, scalar)
-
-		async write request last      see aio_write(2)   
-		async write return last          see aio_return(2) 
-		     memcpy current → last       see memcpy(3)    
-
-		async read return next         see aio_return(2) 
-		     memcpy next → current
-
-
-
-	*/
 
 
 
