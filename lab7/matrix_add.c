@@ -56,7 +56,7 @@ void main (int argc, char** argv) {
 
 	struct aiocb calculate;	//gets filled first and calculations done here
 	struct aiocb fill;	//this is the one that reads blocks
-	struct aiocb store; //once calculate is done this writes back
+	//struct aiocb store; //once calculate is done this writes back
 
     load(&calculate, 0, blockSize);
 	aio_read(&calculate);
@@ -64,7 +64,10 @@ void main (int argc, char** argv) {
 	while(aio_error(&calculate) == EINPROGRESS);
 
 	aio_return(&calculate);
-	//calculateed the first block now for the for loop
+	//add the matrix the first time
+	matrix_add();
+
+	unload(&calculate, 0); //added first one now unload it
 
 	for (int i = blockSize; i < totChar; i = i + blockSize) {
 		//this is where we load the next set before calculating for
@@ -72,9 +75,27 @@ void main (int argc, char** argv) {
 		load(&fill, i, blockSize);
 		aio_read(&fill);
 
-		while(aio_error(&calculate) == EINPROGRESS);
+		while(aio_error(&fill) == EINPROGRESS);
 		aio_return(&fill);
+
+		memcpy(&calculate, &store, sizeof(&store));
+
+		matrix_add(); //add the calculate struct
+
+		unload(&store, (i - blockSize));
+
+
 		//finished filling next block
+
+		//do the matrix add to the old one(calculate)
+
+		//fill next one from here
+		//memcpy(&store, &calculate, sizeof(&calculate));
+
+		//unload(&store, (i - blockSize));
+
+
+
 
 	}
 
