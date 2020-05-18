@@ -10,10 +10,6 @@
 #include <errno.h>
 #include <sys/wait.h>
 
-const int M = 3;
-const int N = 3;
-
-
 void load(struct aiocb *temp, off_t off, size_t blockSize) {
 	memset(temp, 0, sizeof (struct aiocb));
 	temp->aio_fildes = fileno(stdin);
@@ -30,12 +26,8 @@ void unload(struct aiocb *temp, off_t off, size_t blockSize) {
 }
 
 
-void matrix_add (int block[M][N], int size, int scalar) {
-	for (int i = 0; i < size; i++) {//he set i = 1 but doesnt make sense
-		for (int j = 0; j < size; j++) { //again j = 1
-			block[i][j] = block[i][j] + scalar;
-		}
-	}
+void matrix_add (struct aiocb* calculate, int size, int scalar, int blockSize) {
+
 }
 
 void main (int argc, char** argv) {
@@ -65,9 +57,11 @@ void main (int argc, char** argv) {
 
 	aio_return(&calculate);
 	//add the matrix the first time
-	matrix_add();
+	matrix_add(&calculate, size, scalar, blockSize);
 
-	unload(&calculate, 0); //added first one now unload it
+	unload(&calculate, 0, blockSize); //added first one now unload it struct aiocb *temp, off_t off, size_t blockSize
+
+	aio_write(&calculate);
 
 	for (int i = blockSize; i < totChar; i = i + blockSize) {
 		//this is where we load the next set before calculating for
@@ -78,22 +72,13 @@ void main (int argc, char** argv) {
 		while(aio_error(&fill) == EINPROGRESS);
 		aio_return(&fill);
 
-		memcpy(&calculate, &store, sizeof(&store));
+		memcpy(&calculate, &fill, sizeof(&fill));
 
-		matrix_add(); //add the calculate struct
+		matrix_add(&calculate, size, scalar, blockSize);
 
-		unload(&store, (i - blockSize));
+		unload(&calculate, (i - blockSize), blockSize);
 
-
-		//finished filling next block
-
-		//do the matrix add to the old one(calculate)
-
-		//fill next one from here
-		//memcpy(&store, &calculate, sizeof(&calculate));
-
-		//unload(&store, (i - blockSize));
-
+		aio_write(&calculate);
 
 
 
@@ -123,19 +108,6 @@ void main (int argc, char** argv) {
 	//aio_return(&aiocb);
 
 
-	for (int i = 0; i < blocksSquared - 1; i++) {
-		//last = current - 1;
-		//next = current + 1;
-
-		//memcpy(next, calculate, 5 * blocksSquared);
-
-		//calculate->aio_offset = 5 * blocksSquared * next;
-
-		//aio_read(&calculate);
-
-	}
-
-
 
 	//fgets(buffer, 10000, stdin);
 
@@ -143,10 +115,10 @@ void main (int argc, char** argv) {
 	//printf("num of args: %d\n", argc);
 	//size * size * 4 4k
 	//block * block * 12 offset
-	sleep(3);
+	//sleep(3);
 	//matrix_add ();
 	//printf("%d\n%d\n", startTime,scalar);
 	endTime = time(NULL);
 	int opTime = endTime - startTime;
-	printf("time for operation: %d", opTime);
+	printf("time for operation: %d\n\n", opTime);
 }

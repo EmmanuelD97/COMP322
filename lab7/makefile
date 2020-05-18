@@ -16,12 +16,12 @@ all: $(EXECUTABLEG) $(EXECUTABLEA)
 
 
 $(EXECUTABLEG): $(SRCG)
-	$(CC) $(CFLAGS) -c $(SRCG)
-	$(CC) $(CFLAGS) -o $@ $(OBJG)
+	$(CC) $(CFLAGS) -c $(SRCG) -lrt
+	$(CC) $(CFLAGS) -o $@ $(OBJG) -lrt
 
 $(EXECUTABLEA): $(SRCA)
-	$(CC) $(CFLAGS) -c $(SRCA)
-	$(CC) $(CFLAGS) -o $@ $(OBJA)
+	$(CC) $(CFLAGS) -c $(SRCA) -lrt
+	$(CC) $(CFLAGS) -o $@ $(OBJA) -lrt
 
 CLEAN:
 	rm -f $(EXECUTABLEG) $(OBJG) *~
