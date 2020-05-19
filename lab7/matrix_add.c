@@ -10,6 +10,10 @@
 #include <errno.h>
 #include <sys/wait.h>
 
+//I got load and unload from a stackoverflow page NOT MY ORIGINAL WORK
+//these are temporary until I can fix the rest of the main method then I will
+//replace these. Not sure exactly how to rewrite these tho... seems pretty straight
+//forward tbh
 void load(struct aiocb *fill, off_t off, size_t blockSize) {
 	memset(fill, 0, sizeof (struct aiocb));
 	fill->aio_fildes = fileno(stdin);
@@ -94,45 +98,13 @@ void main (int argc, char** argv) {
 
 	}
 
+	//calculating the last block and storing it
 	matrix_add(&calculate, size, scalar, blockSize);
 	memcpy(&store, &calculate, sizeof(struct aiocb));
 	unload(&store, (totChar - blockSize) ,blockSize); //might be wrong
 	while(aio_error(&store) == EINPROGRESS);
 	aio_return(&store);
-	//matrix_add();
 
-
-	//memset(check, 0xaa, BUF_SIZE);
-	//memset(&aiocb, 0, sizeof(struct aiocb));
-	/*aiocb.aio_fildes = descriptor;
-	aiocb.aio_buf = check;
-	aiocb.aio_nbytes = BUF_SIZE;*/
-	//aiocb.aio_lio_opcode = write;
-
-
-	//int ret;
-	//aio_read(&aiocb);
-	//wait until end of transaction
-	//while ((err = aio_error(&aiocb)) == EINPROGRESS);
-
-	//err = aio_error(&aiocb);
-	//ret = aio_return(&aiocb);
-
-	//aio_read(&aiocb);
-
-	//aio_return(&aiocb);
-
-
-
-	//fgets(buffer, 10000, stdin);
-
-	//printf("should be first: %d\nshould be second: %d\n", size,blocks);
-	//printf("num of args: %d\n", argc);
-	//size * size * 4 4k
-	//block * block * 12 offset
-	//sleep(3);
-	//matrix_add ();
-	//printf("%d\n%d\n", startTime,scalar);
 	endTime = time(NULL);
 	int opTime = endTime - startTime;
 	printf("time for operation: %d\n\n", opTime);
