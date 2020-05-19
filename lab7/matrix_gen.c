@@ -22,6 +22,7 @@ void matrixGen(int size) {
 		}
 		printf("\n");
 	}
+	printf("\n");
 }
 
 void main (int argc, char** argv) {

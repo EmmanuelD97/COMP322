@@ -10,19 +10,19 @@
 #include <errno.h>
 #include <sys/wait.h>
 
-void load(struct aiocb *temp, off_t off, size_t blockSize) {
-	memset(temp, 0, sizeof (struct aiocb));
-	temp->aio_fildes = fileno(stdin);
-	temp->aio_nbytes = blockSize; //blockSize
-	temp->aio_offset = off;
-	temp->aio_buf = malloc(blockSize);
-	temp->aio_reqprio = 0;
+void load(struct aiocb *fill, off_t off, size_t blockSize) {
+	memset(fill, 0, sizeof (struct aiocb));
+	fill->aio_fildes = fileno(stdin);
+	fill->aio_nbytes = blockSize; //blockSize
+	fill->aio_offset = off;
+	fill->aio_buf = malloc(blockSize);
+	fill->aio_reqprio = 0;
 }
 
-void unload(struct aiocb *temp, off_t off, size_t blockSize) {
-	temp->aio_fildes = fileno(stdout);
-	temp->aio_nbytes = blockSize;
-	temp->aio_offset = off;
+void unload(struct aiocb *store, off_t off, size_t blockSize) {
+	store->aio_fildes = fileno(stdout);
+	store->aio_nbytes = blockSize;
+	store->aio_offset = off;
 }
 
 
@@ -48,42 +48,57 @@ void main (int argc, char** argv) {
 
 	struct aiocb calculate;	//gets filled first and calculations done here
 	struct aiocb fill;	//this is the one that reads blocks
-	//struct aiocb store; //once calculate is done this writes back
+	struct aiocb store; //once calculate is done this writes back
 
     load(&calculate, 0, blockSize);
 	aio_read(&calculate);
+
+
+
+	scalar = 1;
+
+	//printf("this is the scalar %d\n", scalar);
 
 	while(aio_error(&calculate) == EINPROGRESS);
 
 	aio_return(&calculate);
 	//add the matrix the first time
-	matrix_add(&calculate, size, scalar, blockSize);
+	//matrix_add(&calculate, size, scalar, blockSize);
 
-	unload(&calculate, 0, blockSize); //added first one now unload it struct aiocb *temp, off_t off, size_t blockSize
+	//unload(&calculate, 0, blockSize); //added first one now unload it struct aiocb *temp, off_t off, size_t blockSize
 
-	aio_write(&calculate);
+	//aio_write(&calculate);
 
 	for (int i = blockSize; i < totChar; i = i + blockSize) {
-		//this is where we load the next set before calculating for
-		//the first loaded block
-		load(&fill, i, blockSize);
-		aio_read(&fill);
-
-		while(aio_error(&fill) == EINPROGRESS);
-		aio_return(&fill);
-
-		memcpy(&calculate, &fill, sizeof(&fill));
-
+		//calculating the first filled
 		matrix_add(&calculate, size, scalar, blockSize);
-
 		unload(&calculate, (i - blockSize), blockSize);
 
 		aio_write(&calculate);
+		//
+		//filling next one
+		load(&fill, i, blockSize);
+		aio_read(&fill);
+		while(aio_error(&fill) == EINPROGRESS);
+		aio_return(&fill);
+		//filled next one
+		//copy calculated one to write one
+		memcpy(&store, &calculate, sizeof(struct aiocb));
+		unload(&store, (i - blockSize), blockSize);
 
-
+		aio_write(&store);
+		while(aio_error(&store) == EINPROGRESS);
+		//stored
+		//copy next one to calculate one
+		memcpy(&calculate, &fill, sizeof(struct aiocb));
 
 	}
 
+	matrix_add(&calculate, size, scalar, blockSize);
+	memcpy(&store, &calculate, sizeof(struct aiocb));
+	unload(&store, (totChar - blockSize) ,blockSize); //might be wrong
+	while(aio_error(&store) == EINPROGRESS);
+	aio_return(&store);
 	//matrix_add();
 
 
