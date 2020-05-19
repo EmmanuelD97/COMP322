@@ -15,7 +15,6 @@
 //replace these. Not sure exactly how to rewrite these tho... seems pretty straight
 //forward tbh
 void load(struct aiocb *fill, off_t off, size_t blockSize) {
-	memset(fill, 0, sizeof (struct aiocb));
 	fill->aio_fildes = fileno(stdin);
 	fill->aio_nbytes = blockSize; //blockSize
 	fill->aio_offset = off;
@@ -42,7 +41,6 @@ void main (int argc, char** argv) {
 	int size = atoi(argv[1]);
 	int blocks = atoi(argv[2]);
 	int bufferSize = atoi(argv[1]) * 5;
-	//int last, next;
 	int blocksSquared = (blocks * blocks);
 	//this is because we have offset of 4 per number and we have
 	//new lines at the end of each row
@@ -74,9 +72,7 @@ void main (int argc, char** argv) {
 			//filled next one
 
 			matrix_add(&calculate, size, scalar, blockSize);
-			/*unload(&calculate, (i - blockSize), blockSize);
 
-			aio_write(&calculate);*/
 			//copy calculated one to write one
 			memcpy(&store, &calculate, sizeof(struct aiocb));
 			unload(&store, i, blockSize); //i - blockSize
@@ -88,7 +84,7 @@ void main (int argc, char** argv) {
 			//copy next one to calculate one
 			memcpy(&calculate, &fill, sizeof(struct aiocb));
 		}
-		else if (i <= totChar) {
+		else if (i < totChar) {
 
 			//filling next one
 			load(&fill, i + blockSize, blockSize);
@@ -98,10 +94,7 @@ void main (int argc, char** argv) {
 			//filled next one
 			//calculating the first filled
 			matrix_add(&calculate, size, scalar, blockSize);
-			/*unload(&calculate, (i - blockSize), blockSize);
-
-			aio_write(&calculate);*/
-			//
+			
 			//copy calculated one to write one
 			memcpy(&store, &calculate, sizeof(struct aiocb));
 			unload(&store, i, blockSize); //i - blockSize
@@ -113,16 +106,7 @@ void main (int argc, char** argv) {
 			//copy next one to calculate one
 			memcpy(&calculate, &fill, sizeof(struct aiocb));
 		}
-		/*else if (i == totChar) {
-			matrix_add(&calculate, size, scalar, blockSize);
 
-			memcpy(&store, &calculate, sizeof(struct aiocb));
-			unload(&store, i, blockSize);
-
-			aio_write(&store);
-			while(aio_error(&store) == EINPROGRESS);
-			aio_return(&store);
-		}*/
 	}
 
 	matrix_add(&calculate, size, scalar, blockSize);
@@ -134,14 +118,7 @@ void main (int argc, char** argv) {
 	while(aio_error(&store) == EINPROGRESS);
 	aio_return(&store);
 
-	//calculating the last block and storing it
-	/*matrix_add(&calculate, size, scalar, blockSize);
-	memcpy(&store, &calculate, sizeof(struct aiocb));
-	unload(&store, (totChar - blockSize) ,blockSize); //might be wrong
-	while(aio_error(&store) == EINPROGRESS);
-	aio_return(&store);*/
-
 	endTime = time(NULL);
 	int opTime = endTime - startTime;
-	fprintf(stderr, "time for operation: %d\n\n", opTime);
+	fprintf(stderr, "time for operation: %d\n", opTime);
 }
