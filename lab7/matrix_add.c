@@ -54,14 +54,8 @@ void main (int argc, char** argv) {
 	struct aiocb fill;	//this is the one that reads blocks
 	struct aiocb store; //once calculate is done this writes back
 
-    load(&calculate, 0, blockSize);
+    /*load(&calculate, 0, blockSize);
 	aio_read(&calculate);
-
-
-
-	scalar = 1;
-
-	//printf("this is the scalar %d\n", scalar);
 
 	while(aio_error(&calculate) == EINPROGRESS);
 
@@ -96,6 +90,78 @@ void main (int argc, char** argv) {
 		//copy next one to calculate one
 		memcpy(&calculate, &fill, sizeof(struct aiocb));
 
+	}*/
+
+
+	for (int i = 0; i <= totChar; i = i + blockSize) {
+		if (i == 0) {
+			load(&calculate, 0, blockSize);
+			aio_read(&calculate);
+
+			while(aio_error(&calculate) == EINPROGRESS);
+
+			aio_return(&calculate);
+
+			//filling next one
+			load(&fill, i, blockSize);
+			aio_read(&fill);
+			while(aio_error(&fill) == EINPROGRESS);
+			aio_return(&fill);
+			//filled next one
+
+			matrix_add(&calculate, size, scalar, blockSize);
+			unload(&calculate, (i - blockSize), blockSize);
+
+			aio_write(&calculate);
+			//copy calculated one to write one
+			memcpy(&store, &calculate, sizeof(struct aiocb));
+			unload(&store, (i - blockSize), blockSize);
+
+			aio_write(&store);
+			while(aio_error(&store) == EINPROGRESS);
+			//stored
+			//copy next one to calculate one
+			memcpy(&calculate, &fill, sizeof(struct aiocb));
+		}
+		else if (i < totChar) {
+			//filling next one
+			load(&fill, i, blockSize);
+			aio_read(&fill);
+			while(aio_error(&fill) == EINPROGRESS);
+			aio_return(&fill);
+			//filled next one
+			//calculating the first filled
+			matrix_add(&calculate, size, scalar, blockSize);
+			unload(&calculate, (i - blockSize), blockSize);
+
+			aio_write(&calculate);
+			//
+			//copy calculated one to write one
+			memcpy(&store, &calculate, sizeof(struct aiocb));
+			unload(&store, (i - blockSize), blockSize);
+
+			aio_write(&store);
+			while(aio_error(&store) == EINPROGRESS);
+			//stored
+			//copy next one to calculate one
+			memcpy(&calculate, &fill, sizeof(struct aiocb));
+		}
+		else if (i == totChar) {
+			matrix_add(&calculate, size, scalar, blockSize);
+			unload(&calculate, (totChar - blockSize), blockSize);
+
+			aio_write(&calculate);
+			//
+			//copy calculated one to write one
+			memcpy(&store, &calculate, sizeof(struct aiocb));
+			unload(&store, (i - blockSize), blockSize);
+
+			aio_write(&store);
+			while(aio_error(&store) == EINPROGRESS);
+			//stored
+			//copy next one to calculate one
+			memcpy(&calculate, &fill, sizeof(struct aiocb));
+		}
 	}
 
 	//calculating the last block and storing it
@@ -107,5 +173,5 @@ void main (int argc, char** argv) {
 
 	endTime = time(NULL);
 	int opTime = endTime - startTime;
-	printf("time for operation: %d\n\n", opTime);
+	fprintf(stderr, "time for operation: %d\n\n", opTime);
 }
